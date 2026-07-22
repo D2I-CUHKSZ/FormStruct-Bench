@@ -19,8 +19,3 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 include = ["formtsr_exp*", "benchmark_stats*", "srfund_exp*"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-ra"
-pythonpath = ["."]

@@ -19,7 +19,6 @@ scripts/           Model adapters, launchers, SFT, and reporting helpers
 peft/              FormStruct SFT dataset construction
 configs/           Benchmark and model configuration examples
 config/            Difficulty, selection, and training metadata
-tests/             Unit and regression tests
 ```
 
 The release intentionally excludes raw data, generated outputs, caches,
@@ -64,12 +63,6 @@ For dataset analysis and plots:
 
 ```bash
 python -m pip install -r requirements-analysis.txt
-```
-
-For development and tests:
-
-```bash
-python -m pip install -r requirements-dev.txt
 ```
 
 Model backends such as vLLM, SGLang, PaddleOCR, PyTorch, and Transformers are
@@ -125,18 +118,6 @@ are examples and must be adapted to the local environment. Other files in
 Common credential variables are listed in `.env.example`. Do not commit a
 populated `.env` file or embed tokens in YAML, Python, shell scripts, logs, or
 generated output.
-
-## Testing
-
-Run the self-contained test suite from the repository root:
-
-```bash
-pytest
-```
-
-Tests requiring model weights, GPUs, raw datasets, vLLM internals, or preserved
-experiment outputs are environment dependent and may be skipped or run
-separately.
 
 ## License
 
