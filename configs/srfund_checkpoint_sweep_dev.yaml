@@ -1,0 +1,105 @@
+data_root: raw/srfund/extracted/dataset
+output_dir: outputs/srfund_transfer_exploratory/checkpoint_sweep
+index_path: outputs/srfund_transfer_exploratory/splits/dev/index.jsonl
+schema_max_files: 25
+compact_structure: false
+
+metric_weights:
+  TSR-path: 0.34
+  VAcc: 0.33
+  R-F1: 0.00
+  LIG-F1: 0.00
+  WAcc: 0.33
+
+models:
+  - name: qwen36_35b_pre_sft_dev
+    provider: external_vllm_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B
+    served_model: qwen36_sweep_base
+    enabled: true
+    batch_size: 8
+    concurrency: 8
+    request_timeout_seconds: 1800
+    retries: 1
+    retry_backoff_seconds: 10
+    temperature: 0
+    max_tokens: 14336
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_hierarchical_v2
+    prompt_variant: hierarchical_full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    fail_fast_server_errors: true
+    env:
+      SGLANG_ENABLE_THINKING: "false"
+
+  - name: qwen36_35b_sft_step100_dev
+    provider: external_vllm_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B-FormStruct-SFT-step100
+    served_model: qwen36_step100
+    enabled: true
+    batch_size: 8
+    concurrency: 8
+    request_timeout_seconds: 1800
+    retries: 1
+    retry_backoff_seconds: 10
+    temperature: 0
+    max_tokens: 14336
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_hierarchical_v2
+    prompt_variant: hierarchical_full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    fail_fast_server_errors: true
+    env:
+      SGLANG_ENABLE_THINKING: "false"
+
+  - name: qwen36_35b_sft_step200_dev
+    provider: external_vllm_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B-FormStruct-SFT-step200
+    served_model: qwen36_step200
+    enabled: true
+    batch_size: 8
+    concurrency: 8
+    request_timeout_seconds: 1800
+    retries: 1
+    retry_backoff_seconds: 10
+    temperature: 0
+    max_tokens: 14336
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_hierarchical_v2
+    prompt_variant: hierarchical_full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    fail_fast_server_errors: true
+    env:
+      SGLANG_ENABLE_THINKING: "false"
+
+  - name: qwen36_35b_sft_final_dev
+    provider: external_vllm_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B-FormStruct-SFT-final
+    served_model: qwen36_final
+    enabled: true
+    batch_size: 8
+    concurrency: 8
+    request_timeout_seconds: 1800
+    retries: 1
+    retry_backoff_seconds: 10
+    temperature: 0
+    max_tokens: 14336
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_hierarchical_v2
+    prompt_variant: hierarchical_full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    fail_fast_server_errors: true
+    env:
+      SGLANG_ENABLE_THINKING: "false"

@@ -1,0 +1,75 @@
+dataset_root: raw/srfund/extracted/dataset
+split: validation_balanced
+output_dir: outputs/srfund_qwen_transfer_benchmark
+seed: 42
+unavailable_per_language: 50
+bootstrap_iterations: 10000
+
+models:
+  - name: qwen35_9b_formtsr_tuned
+    model_id: Qwen3.5-9B-FormTSR-LoRA
+    family: qwen3.5-9b
+    tuned: true
+    enabled: true
+    model_path: /path/to/model/finetuned/Qwen3.5-9B-FormTSR-LoRA
+    served_model: qwen35_9b_formtsr_tuned
+    concurrency: 32
+    data_parallel_size: 4
+    data_parallel_size_local: 4
+    cuda_visible_devices: "0,1,2,3"
+    max_num_seqs: 8
+    max_tokens: 18432
+    max_model_len: 32768
+    gpu_memory_utilization: 0.90
+    data_parallel_rpc_port: 13410
+
+  - name: qwen35_9b_base
+    model_id: Qwen3.5-9B
+    family: qwen3.5-9b
+    tuned: false
+    enabled: true
+    model_path: /path/to/model/base/Qwen/Qwen3.5-9B
+    served_model: qwen35_9b_base
+    concurrency: 32
+    data_parallel_size: 4
+    data_parallel_size_local: 4
+    cuda_visible_devices: "0,1,2,3"
+    max_num_seqs: 8
+    max_tokens: 18432
+    max_model_len: 32768
+    gpu_memory_utilization: 0.90
+    data_parallel_rpc_port: 13411
+
+  - name: qwen36_35b_a3b_formtsr_tuned
+    model_id: Qwen3.6-35B-A3B-FormTSR-Hierarchical-v2
+    family: qwen3.6-35b-a3b
+    tuned: true
+    enabled: true
+    model_path: /path/to/bench/Qwen/Qwen3.6-35B-A3B-FormTSR-Hierarchical-v2
+    served_model: qwen36_35b_a3b_formtsr_tuned
+    concurrency: 16
+    data_parallel_size: 4
+    data_parallel_size_local: 4
+    cuda_visible_devices: "0,1,2,3"
+    max_num_seqs: 4
+    max_tokens: 18432
+    max_model_len: 32768
+    gpu_memory_utilization: 0.95
+    data_parallel_rpc_port: 13412
+
+  - name: qwen36_35b_a3b_base
+    model_id: Qwen3.6-35B-A3B
+    family: qwen3.6-35b-a3b
+    tuned: false
+    enabled: true
+    model_path: /path/to/data/model/Qwen/Qwen3.6-35B-A3B
+    served_model: qwen36_35b_a3b_base
+    concurrency: 16
+    data_parallel_size: 4
+    data_parallel_size_local: 4
+    cuda_visible_devices: "0,1,2,3"
+    max_num_seqs: 4
+    max_tokens: 18432
+    max_model_len: 32768
+    gpu_memory_utilization: 0.95
+    data_parallel_rpc_port: 13413

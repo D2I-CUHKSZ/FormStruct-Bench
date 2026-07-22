@@ -1,0 +1,60 @@
+# Template-disjoint FormTSR test run for the merged Qwen3.6 LoRA model.
+data_root: ./FormTSR/datasets
+layout_root: ./newdataset-layout
+difficulty_csv: outputs/domain_stats/normal_calibrated_difficulty_sample_levels.csv
+output_dir: outputs/qwen36_formtsr_lora_test
+index_path: outputs/dataset_splits/template_stratified_seed42/test_index.jsonl
+schema_max_files: 25
+compact_structure: false
+
+metric_weights:
+  TSR-path: 0.20
+  VAcc: 0.20
+  R-F1: 0.20
+  LIG-F1: 0.20
+  WAcc: 0.20
+
+models:
+  - name: qwen3_6_35b_a3b_formtsr_lora_vllm_full_test
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B-FormTSR-LoRA
+    enabled: true
+    batch_size: 4
+    concurrency: 4
+    server_start_timeout_seconds: 1800
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 12288
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_v1
+    prompt_variant: full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 2
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13374
+    gpu_memory_utilization: 0.95
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    log_dir: outputs/qwen36_formtsr_lora_test/logs
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/bench/Qwen/Qwen3.6-35B-A3B-FormTSR-LoRA"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "qwen3_6_35b_a3b_formtsr_lora"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "true"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/qwen36_formtsr_lora_test/payload_debug.json"
+      FORMTSR_RESULT_FSYNC: "false"
+      SGLANG_ENABLE_THINKING: "false"
+      VLLM_EXTRA_ARGS: "--disable-log-stats --generation-config vllm"

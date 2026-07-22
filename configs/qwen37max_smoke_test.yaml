@@ -1,0 +1,31 @@
+data_root: ./FormTSR/datasets
+layout_root: ./newdataset-layout
+difficulty_csv: outputs/domain_stats/normal_calibrated_difficulty_sample_levels.csv
+output_dir: outputs/qwen37max_smoke_test
+index_path: outputs/qwen37max_smoke_test/dataset_index.jsonl
+schema_max_files: 25
+compact_structure: false
+
+metric_weights:
+  TSR-path: 0.20
+  VAcc: 0.20
+  R-F1: 0.20
+  LIG-F1: 0.20
+  WAcc: 0.20
+
+models:
+  - name: qwen37max_batch
+    provider: local_hf_vlm
+    group: vlm
+    model: qwen3.7-max
+    enabled: true
+    batch_size: 1
+    temperature: 0
+    max_tokens: 8192
+    timeout_seconds: 120
+    retries: 1
+    retry_backoff_seconds: 30
+    command: "python scripts/qwen37max_adapter.py"
+    env:
+      OPENAI_BASE_URL: "https://batch.dashscope.aliyuncs.com/compatible-mode/v1"
+      FORMTSR_MODEL: "qwen3.7-max"

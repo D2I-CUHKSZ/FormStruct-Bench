@@ -1,0 +1,955 @@
+data_root: ./FormTSR/datasets
+layout_root: ./newdataset-layout
+difficulty_csv: outputs/domain_stats/normal_calibrated_difficulty_sample_levels.csv
+output_dir: outputs/main_exp
+index_path: outputs/main_exp/dataset_index.jsonl
+schema_max_files: 25
+compact_structure: false
+
+metric_weights:
+  TSR-path: 0.20
+  VAcc: 0.20
+  R-F1: 0.20
+  LIG-F1: 0.20
+  WAcc: 0.20
+
+models:
+  - name: gpt_vlm
+    provider: openai_vlm
+    group: vlm
+    model: gpt-5.5
+    enabled: true
+    batch_size: 8
+    temperature: 0
+    max_tokens: 32768
+    timeout_seconds: 240
+    retries: 1
+    retry_backoff_seconds: 120
+
+  - name: claude_vlm
+    provider: anthropic_vlm
+    group: vlm
+    model: claude-sonnet-5
+    enabled: true
+    batch_size: 2
+    temperature: 0
+    max_tokens: 8192
+
+  - name: gemini_vlm
+    provider: gemini_vlm
+    group: vlm
+    model: gemini-3.5-flash
+    enabled: true
+    batch_size: 2
+    temperature: 0
+    max_tokens: 8192
+
+  - name: Qwen3.6-35B-A3B
+    provider: local_sglang_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B
+    enabled: false
+    batch_size: 64
+    concurrency: 64
+    dp_size: 2
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 8192
+    timeout_seconds: 43200
+    base_url: "http://127.0.0.1:30000"
+    command: "./.venv/bin/python scripts/sglang_vlm_infer.py --base-url http://127.0.0.1:30000 --timeout 1500 --retries 1 --retry-sleep 5"
+    batch_command: "PYTHONPATH=./scripts/sglang_stubs ./.venv/bin/python scripts/sglang_vlm_offline_batch.py --model-path /path/to/data/model/Qwen/Qwen3.6-35B-A3B"
+    env:
+      CUDA_HOME: "/path/to/data/cuda-12.8"
+      SGLANG_MODEL_PATH: "/path/to/data/model/Qwen/Qwen3.6-35B-A3B"
+      FLASHINFER_NVCC: "/path/to/data/cuda-12.8/bin/nvcc"
+      NVCC_PREPEND_FLAGS: "-ccbin /usr/bin/g++-13"
+      FORMTSR_SERVED_MODEL: "qwen3_6_35b_a3b"
+      SGLANG_MAX_TOKENS: "12288"
+      SGLANG_TEMPERATURE: "0"
+      SGLANG_ENABLE_THINKING: "false"
+      SGLANG_CONTEXT_LENGTH: "24576"
+      SGLANG_KV_CACHE_DTYPE: "auto"
+      SGLANG_MAX_TOTAL_TOKENS: "32768"
+      SGLANG_MEM_FRACTION_STATIC: "0.92"
+      SGLANG_SUBMIT_MODE: "async"
+      SGLANG_DP_SIZE: "2"
+      SGLANG_MAX_INFLIGHT_REQUESTS: "64"
+      SGLANG_MAX_RUNNING_REQUESTS: "64"
+      SGLANG_MAX_QUEUED_REQUESTS: "256"
+      SGLANG_CHUNKED_PREFILL_SIZE: "8192"
+      SGLANG_MAX_PREFILL_TOKENS: "24576"
+      SGLANG_SCHEDULE_CONSERVATIVENESS: "0.8"
+      SGLANG_CUDA_GRAPH_MAX_BS: "64"
+      SGLANG_DISABLE_CUDA_GRAPH: "false"
+      SGLANG_DISABLE_OVERLAP_SCHEDULE: "false"
+      SGLANG_LOG_LEVEL: "info"
+      SGLANG_KEEP_MM_FEATURE_ON_DEVICE: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      SGLANG_STOP: "\\n```"
+
+  - name: Qwen3.6-35B-A3B_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B
+    enabled: false
+    batch_size: 4
+    concurrency: 4
+    server_start_timeout_seconds: 1800
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 12288
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: compact_valid_json
+    include_chat_template_kwargs: false
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 2
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13352
+    gpu_memory_utilization: 0.95
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/data/model/Qwen/Qwen3.6-35B-A3B"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "qwen3_6_35b_a3b"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/qwen3_6_35b_a3b_vllm_vlm_payload_debug.json"
+
+  - name: qwen3_5_9b_sglang_vlm
+    provider: local_sglang_server_vlm
+    group: vlm
+    model: Qwen3.5-9B
+    enabled: false
+    batch_size: 32
+    concurrency: 32
+    dp_size: 2
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 12288
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_json_schema_name: formtsr_vlm_v1
+    base_url: "http://127.0.0.1:30000"
+    env:
+      CUDA_HOME: "/path/to/data/cuda-12.8"
+      SGLANG_MODEL_PATH: "/path/to/model/base/Qwen/Qwen3.5-9B"
+      FLASHINFER_NVCC: "/path/to/data/cuda-12.8/bin/nvcc"
+      NVCC_PREPEND_FLAGS: "-ccbin /usr/bin/g++-13"
+      FORMTSR_SERVED_MODEL: "qwen3_5_9b"
+      SGLANG_MAX_TOKENS: "12288"
+      SGLANG_TEMPERATURE: "0"
+      SGLANG_ENABLE_THINKING: "false"
+      SGLANG_CONTEXT_LENGTH: "24576"
+      SGLANG_KV_CACHE_DTYPE: "auto"
+      SGLANG_MAX_TOTAL_TOKENS: "131072"
+      SGLANG_MEM_FRACTION_STATIC: "0.90"
+      SGLANG_SUBMIT_MODE: "async"
+      SGLANG_DP_SIZE: "2"
+      SGLANG_MAX_INFLIGHT_REQUESTS: "32"
+      SGLANG_MAX_RUNNING_REQUESTS: "32"
+      SGLANG_MAX_QUEUED_REQUESTS: "256"
+      SGLANG_CHUNKED_PREFILL_SIZE: "8192"
+      SGLANG_MAX_PREFILL_TOKENS: "24576"
+      SGLANG_SCHEDULE_CONSERVATIVENESS: "0.8"
+      SGLANG_CUDA_GRAPH_MAX_BS: "32"
+      SGLANG_GRAMMAR_BACKEND: "xgrammar"
+      SGLANG_CONSTRAINED_JSON_DISABLE_ANY_WHITESPACE: "true"
+      SGLANG_DISABLE_CUDA_GRAPH: "false"
+      SGLANG_DISABLE_OVERLAP_SCHEDULE: "false"
+      SGLANG_LOG_LEVEL: "warning"
+      SGLANG_KEEP_MM_FEATURE_ON_DEVICE: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/qwen3_5_9b_sglang_vlm_payload_debug.json"
+      SGLANG_STOP: "\\n```"
+
+  - name: qwen3_5_9b_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: Qwen3.5-9B
+    enabled: false
+    batch_size: 16
+    concurrency: 16
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 12288
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: compact_valid_json
+    include_chat_template_kwargs: false
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 8
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13350
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/model/base/Qwen/Qwen3.5-9B"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "qwen3_5_9b"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/qwen3_5_9b_vllm_vlm_payload_debug.json"
+
+  - name: caprl_internvl3_5_8b_sglang_vlm
+    provider: local_hf_vlm
+    group: vlm
+    model: CapRL-InternVL3.5-8B
+    enabled: false
+    batch_size: 1
+    concurrency: 1
+    dp_size: 2
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 2048
+    timeout_seconds: 43200
+    prompt_variant: minimal_json
+    response_format: json_schema
+    response_json_schema_name: formtsr_vlm_v1
+    base_url: "http://127.0.0.1:30000"
+    batch_command: "./.venv/bin/python scripts/hf_internvl_batch.py --model-path /path/to/model/base/internlm/CapRL-InternVL3.5-8B"
+    env:
+      CUDA_HOME: "/path/to/data/cuda-12.8"
+      SGLANG_MODEL_PATH: "/path/to/model/base/internlm/CapRL-InternVL3.5-8B"
+      HF_MODEL_PATH: "/path/to/model/base/internlm/CapRL-InternVL3.5-8B"
+      HF_MAX_TOKENS: "2048"
+      HF_TEMPERATURE: "0"
+      HF_DEVICE: "cuda:0"
+      HF_DTYPE: "bfloat16"
+      FLASHINFER_NVCC: "/path/to/data/cuda-12.8/bin/nvcc"
+      NVCC_PREPEND_FLAGS: "-ccbin /usr/bin/g++-13"
+      FORMTSR_SERVED_MODEL: "caprl_internvl3_5_8b"
+      SGLANG_MAX_TOKENS: "12288"
+      SGLANG_TEMPERATURE: "0"
+      SGLANG_ENABLE_THINKING: "false"
+      SGLANG_CONTEXT_LENGTH: "24576"
+      SGLANG_KV_CACHE_DTYPE: "auto"
+      SGLANG_MAX_TOTAL_TOKENS: "131072"
+      SGLANG_MEM_FRACTION_STATIC: "0.90"
+      SGLANG_SUBMIT_MODE: "async"
+      SGLANG_DP_SIZE: "2"
+      SGLANG_MAX_INFLIGHT_REQUESTS: "32"
+      SGLANG_MAX_RUNNING_REQUESTS: "32"
+      SGLANG_MAX_QUEUED_REQUESTS: "256"
+      SGLANG_CHUNKED_PREFILL_SIZE: "8192"
+      SGLANG_MAX_PREFILL_TOKENS: "24576"
+      SGLANG_SCHEDULE_CONSERVATIVENESS: "0.8"
+      SGLANG_CUDA_GRAPH_MAX_BS: "32"
+      SGLANG_GRAMMAR_BACKEND: "xgrammar"
+      SGLANG_CONSTRAINED_JSON_DISABLE_ANY_WHITESPACE: "true"
+      SGLANG_DISABLE_CUDA_GRAPH: "false"
+      SGLANG_DISABLE_OVERLAP_SCHEDULE: "false"
+      SGLANG_LOG_LEVEL: "warning"
+      SGLANG_KEEP_MM_FEATURE_ON_DEVICE: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/caprl_internvl3_5_8b_sglang_vlm_payload_debug.json"
+      SGLANG_STOP: "\\n```"
+
+  - name: caprl_internvl3_5_8b_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: CapRL-InternVL3.5-8B
+    enabled: false
+    batch_size: 32
+    concurrency: 32
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 12288
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: compact_valid_json
+    include_chat_template_kwargs: false
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 8
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13345
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/model/base/internlm/CapRL-InternVL3.5-8B"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "caprl_internvl3_5_8b"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/caprl_internvl3_5_8b_vllm_vlm_payload_debug.json"
+
+  - name: gemma4_12b_sglang_vlm
+    provider: local_sglang_server_vlm
+    group: vlm
+    model: gemma-4-12B-it
+    enabled: false
+    batch_size: 64
+    concurrency: 64
+    dp_size: 2
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 12288
+    timeout_seconds: 43200
+    base_url: "http://127.0.0.1:30000"
+    env:
+      CUDA_HOME: "/path/to/data/cuda-12.8"
+      SGLANG_MODEL_PATH: "/path/to/model/base/google/gemma-4-12B-it"
+      FLASHINFER_NVCC: "/path/to/data/cuda-12.8/bin/nvcc"
+      NVCC_PREPEND_FLAGS: "-ccbin /usr/bin/g++-13"
+      FORMTSR_SERVED_MODEL: "gemma_4_12b_it"
+      SGLANG_MAX_TOKENS: "12288"
+      SGLANG_TEMPERATURE: "0"
+      SGLANG_ENABLE_THINKING: "false"
+      SGLANG_CONTEXT_LENGTH: "24576"
+      SGLANG_KV_CACHE_DTYPE: "auto"
+      SGLANG_MAX_TOTAL_TOKENS: "32768"
+      SGLANG_MEM_FRACTION_STATIC: "0.88"
+      SGLANG_SUBMIT_MODE: "async"
+      SGLANG_DP_SIZE: "2"
+      SGLANG_MAX_INFLIGHT_REQUESTS: "64"
+      SGLANG_MAX_RUNNING_REQUESTS: "64"
+      SGLANG_MAX_QUEUED_REQUESTS: "256"
+      SGLANG_CHUNKED_PREFILL_SIZE: "8192"
+      SGLANG_MAX_PREFILL_TOKENS: "24576"
+      SGLANG_SCHEDULE_CONSERVATIVENESS: "0.8"
+      SGLANG_CUDA_GRAPH_MAX_BS: "64"
+      SGLANG_DISABLE_CUDA_GRAPH: "false"
+      SGLANG_DISABLE_OVERLAP_SCHEDULE: "false"
+      SGLANG_LOG_LEVEL: "info"
+      SGLANG_KEEP_MM_FEATURE_ON_DEVICE: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      SGLANG_STOP: "\\n```"
+
+  - name: gemma4_26b_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: gemma-4-26B-A4B-it
+    enabled: false
+    batch_size: 8
+    concurrency: 8
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 8192
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: step3_compact_json
+    include_chat_template_kwargs: false
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 32768
+    max_num_seqs: 4
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13349
+    gpu_memory_utilization: 0.90
+    safetensors_load_strategy: prefetch
+    limit_mm_per_prompt: '{"image": 1, "audio": 0}'
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/bench/google/gemma-4-26B-A4B-it"
+      VLLM_BIN: "/path/to/bench/venvs/vllm-gemma4/bin/vllm"
+      VLLM_SITE_PACKAGES: "/path/to/bench/venvs/vllm-gemma4/lib/python3.12/site-packages"
+      VLLM_PYTHON_LIB_DIR: "/path/to/bench/uv-python/cpython-3.12.13-linux-x86_64-gnu/lib"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "gemma4_26b_a4b_it"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/gemma4_26b_vllm_vlm_payload_debug.json"
+
+  - name: glm4_6v_flash_sglang_vlm
+    provider: local_sglang_server_vlm
+    group: vlm
+    model: GLM-4.6V-Flash
+    enabled: false
+    batch_size: 64
+    concurrency: 64
+    dp_size: 2
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 12288
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_json_schema_name: formtsr_vlm_v1
+    base_url: "http://127.0.0.1:30000"
+    sglang_extra_args:
+      json_model_override_args: '{"rope_scaling":{"rope_type":"default","mrope_section":[8,12,12]}}'
+    env:
+      CUDA_HOME: "/path/to/data/cuda-12.8"
+      SGLANG_MODEL_PATH: "/path/to/model/base/zai-org/GLM-4.6V-Flash"
+      FLASHINFER_NVCC: "/path/to/data/cuda-12.8/bin/nvcc"
+      NVCC_PREPEND_FLAGS: "-ccbin /usr/bin/g++-13"
+      FORMTSR_SERVED_MODEL: "glm4_6v_flash"
+      SGLANG_MAX_TOKENS: "12288"
+      SGLANG_TEMPERATURE: "0"
+      SGLANG_ENABLE_THINKING: "false"
+      SGLANG_CONTEXT_LENGTH: "24576"
+      SGLANG_KV_CACHE_DTYPE: "auto"
+      SGLANG_MAX_TOTAL_TOKENS: "131072"
+      SGLANG_MEM_FRACTION_STATIC: "0.94"
+      SGLANG_SUBMIT_MODE: "async"
+      SGLANG_DP_SIZE: "2"
+      SGLANG_MAX_INFLIGHT_REQUESTS: "64"
+      SGLANG_MAX_RUNNING_REQUESTS: "64"
+      SGLANG_MAX_QUEUED_REQUESTS: "512"
+      SGLANG_CHUNKED_PREFILL_SIZE: "8192"
+      SGLANG_MAX_PREFILL_TOKENS: "24576"
+      SGLANG_SCHEDULE_CONSERVATIVENESS: "0.8"
+      SGLANG_CUDA_GRAPH_MAX_BS: "64"
+      SGLANG_GRAMMAR_BACKEND: "xgrammar"
+      SGLANG_CONSTRAINED_JSON_DISABLE_ANY_WHITESPACE: "true"
+      SGLANG_DISABLE_CUDA_GRAPH: "false"
+      SGLANG_DISABLE_OVERLAP_SCHEDULE: "false"
+      SGLANG_LOG_LEVEL: "info"
+      SGLANG_KEEP_MM_FEATURE_ON_DEVICE: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/glm4_6v_flash_sglang_vlm_payload_debug.json"
+      SGLANG_STOP: "\\n```"
+
+  - name: glm4_6v_flash_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: GLM-4.6V-Flash
+    enabled: false
+    batch_size: 16
+    concurrency: 16
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 12288
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: compact_valid_json
+    include_chat_template_kwargs: false
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 8
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13351
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "./model_overrides/GLM-4.6V-Flash-vllm"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "glm4_6v_flash"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/glm4_6v_flash_vllm_vlm_payload_debug.json"
+
+  - name: kimi_vl_a3b_sglang_vlm
+    provider: local_sglang_server_vlm
+    group: vlm
+    model: Kimi-VL-A3B-Instruct
+    enabled: false
+    batch_size: 2
+    concurrency: 2
+    dp_size: 2
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 4096
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_json_schema_name: formtsr_vlm_compact_v1
+    base_url: "http://127.0.0.1:30000"
+    env:
+      CUDA_HOME: "/path/to/data/cuda-12.8"
+      SGLANG_MODEL_PATH: "/path/to/model/base/moonshotai/Kimi-VL-A3B-Instruct"
+      FLASHINFER_NVCC: "/path/to/data/cuda-12.8/bin/nvcc"
+      NVCC_PREPEND_FLAGS: "-ccbin /usr/bin/g++-13"
+      FORMTSR_SERVED_MODEL: "kimi_vl_a3b_instruct"
+      SGLANG_MAX_TOKENS: "4096"
+      SGLANG_TEMPERATURE: "0"
+      SGLANG_ENABLE_THINKING: "false"
+      SGLANG_CONTEXT_LENGTH: "24576"
+      SGLANG_KV_CACHE_DTYPE: "auto"
+      SGLANG_MAX_TOTAL_TOKENS: "131072"
+      SGLANG_MEM_FRACTION_STATIC: "0.94"
+      SGLANG_SUBMIT_MODE: "async"
+      SGLANG_DP_SIZE: "2"
+      SGLANG_MAX_INFLIGHT_REQUESTS: "2"
+      SGLANG_MAX_RUNNING_REQUESTS: "2"
+      SGLANG_MAX_QUEUED_REQUESTS: "64"
+      SGLANG_CHUNKED_PREFILL_SIZE: "8192"
+      SGLANG_MAX_PREFILL_TOKENS: "24576"
+      SGLANG_SCHEDULE_CONSERVATIVENESS: "0.8"
+      SGLANG_CUDA_GRAPH_MAX_BS: "2"
+      SGLANG_GRAMMAR_BACKEND: "xgrammar"
+      SGLANG_CONSTRAINED_JSON_DISABLE_ANY_WHITESPACE: "true"
+      SGLANG_DISABLE_CUDA_GRAPH: "false"
+      SGLANG_DISABLE_OVERLAP_SCHEDULE: "false"
+      SGLANG_LOG_LEVEL: "info"
+      SGLANG_KEEP_MM_FEATURE_ON_DEVICE: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/kimi_vl_a3b_sglang_vlm_payload_debug.json"
+      SGLANG_STOP: "\\n```"
+
+  - name: kimi_vl_a3b_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: Kimi-VL-A3B-Instruct
+    enabled: false
+    batch_size: 16
+    concurrency: 16
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 4096
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: compact_valid_json
+    include_chat_template_kwargs: false
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 8
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13346
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/bench/moonshotai/Kimi-VL-A3B-Instruct"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "kimi_vl_a3b_instruct"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/kimi_vl_a3b_vllm_vlm_payload_debug.json"
+
+  - name: deepseek_ocr2_sglang_vlm
+    provider: local_sglang_server_vlm
+    group: vlm
+    model: DeepSeek-OCR-2
+    enabled: false
+    batch_size: 8
+    concurrency: 8
+    dp_size: 1
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 4096
+    timeout_seconds: 43200
+    prompt_variant: deepseek_ocr_markdown
+    prompt_prefix: "<image>\n"
+    response_format: text
+    parser: deepseek_ocr_markdown
+    base_url: "http://127.0.0.1:30000"
+    env:
+      CUDA_HOME: "/path/to/data/cuda-12.8"
+      SGLANG_MODEL_PATH: "/path/to/model/base/deepseek-ai/DeepSeek-OCR-2"
+      FLASHINFER_NVCC: "/path/to/data/cuda-12.8/bin/nvcc"
+      NVCC_PREPEND_FLAGS: "-ccbin /usr/bin/g++-13"
+      FORMTSR_SERVED_MODEL: "deepseek_ocr2"
+      SGLANG_MAX_TOKENS: "4096"
+      SGLANG_TEMPERATURE: "0"
+      SGLANG_ENABLE_THINKING: "false"
+      SGLANG_CONTEXT_LENGTH: "8192"
+      SGLANG_KV_CACHE_DTYPE: "auto"
+      SGLANG_MAX_TOTAL_TOKENS: "32768"
+      SGLANG_MEM_FRACTION_STATIC: "0.90"
+      SGLANG_SUBMIT_MODE: "async"
+      SGLANG_DP_SIZE: "1"
+      SGLANG_MAX_INFLIGHT_REQUESTS: "8"
+      SGLANG_MAX_RUNNING_REQUESTS: "8"
+      SGLANG_MAX_QUEUED_REQUESTS: "64"
+      SGLANG_CHUNKED_PREFILL_SIZE: "4096"
+      SGLANG_MAX_PREFILL_TOKENS: "8192"
+      SGLANG_SCHEDULE_CONSERVATIVENESS: "0.8"
+      SGLANG_CUDA_GRAPH_MAX_BS: "8"
+      SGLANG_GRAMMAR_BACKEND: "xgrammar"
+      SGLANG_CONSTRAINED_JSON_DISABLE_ANY_WHITESPACE: "true"
+      SGLANG_DISABLE_CUDA_GRAPH: "false"
+      SGLANG_DISABLE_OVERLAP_SCHEDULE: "false"
+      SGLANG_LOG_LEVEL: "warning"
+      SGLANG_KEEP_MM_FEATURE_ON_DEVICE: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/deepseek_ocr2_sglang_vlm_payload_debug.json"
+      SGLANG_STOP: "\\n```"
+
+  - name: deepseek_vl2_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: deepseek-vl2
+    enabled: false
+    batch_size: 8
+    concurrency: 8
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 2048
+    timeout_seconds: 43200
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: compact_valid_json
+    include_chat_template_kwargs: false
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 4096
+    max_num_seqs: 4
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13348
+    hf_overrides:
+      text_config:
+        num_hidden_layers: 30
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/bench/deepseek-ai/deepseek-vl2"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "deepseek_vl2"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/deepseek_vl2_vllm_vlm_payload_debug.json"
+
+  - name: paddleocr_vl_1_6_hf_vlm
+    provider: local_hf_vlm
+    group: vlm
+    model: PaddleOCR-VL-1.6
+    enabled: false
+    batch_size: 16
+    temperature: 0
+    max_tokens: 4096
+    timeout_seconds: 172800
+    response_format: json_schema
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: compact_valid_json
+    batch_error_completes_samples: true
+    batch_command: "./.venv/bin/python scripts/hf_document_vlm_batch.py --backend paddleocr_vl --model-path /path/to/bench/PaddlePaddle/PaddleOCR-VL-1.6"
+    env:
+      CUDA_VISIBLE_DEVICES: "0"
+      HF_MODEL_PATH: "/path/to/bench/PaddlePaddle/PaddleOCR-VL-1.6"
+      HF_DEVICE: "cuda:0"
+      HF_DTYPE: "bfloat16"
+      HF_MAX_TOKENS: "4096"
+      HF_TEMPERATURE: "0"
+      FORMTSR_RESULT_FSYNC: "false"
+
+  - name: paddleocr_vl_1_6_pipeline_sglang
+    provider: local_hf_vlm
+    group: vlm
+    model: PaddleOCR-VL-1.6-0.9B
+    enabled: false
+    batch_size: 8
+    temperature: 0
+    max_tokens: 4096
+    timeout_seconds: 172800
+    response_format: text
+    parser: paddleocr_vl_pipeline
+    batch_error_completes_samples: true
+    batch_command: "/path/to/bench/venvs/paddleocr-sglang/bin/python scripts/paddleocr_vl_pipeline_batch.py"
+    env:
+      CUDA_VISIBLE_DEVICES: "0"
+      CUDA_HOME: "/path/to/data/cuda-12.8"
+      TORCH_CUDA_ARCH_LIST: "8.0"
+      FLASH_ATTN_CUDA_ARCHS: "80"
+      PADDLE_PDX_CACHE_HOME: "/path/to/bench/paddlex-cache"
+      HF_HOME: "/path/to/bench/hf-cache"
+      TRANSFORMERS_CACHE: "/path/to/bench/hf-cache"
+      PADDLEOCR_PIPELINE_VERSION: "v1.6"
+      PADDLEOCR_VL_REC_BACKEND: "sglang-server"
+      PADDLEOCR_VL_REC_MODEL_NAME: "PaddleOCR-VL-1.6-0.9B"
+      PADDLEOCR_VL_REC_MODEL_DIR: "/path/to/bench/PaddlePaddle/PaddleOCR-VL-1.6"
+      PADDLEOCR_VL_REC_API_MODEL_NAME: "PaddleOCR-VL-1.6-0.9B"
+      PADDLEOCR_VL_REC_API_KEY: "EMPTY"
+      PADDLEOCR_VL_REC_SERVER_URL: "http://127.0.0.1:18080/v1"
+      PADDLEOCR_VL_REC_MAX_CONCURRENCY: "8"
+      PADDLEOCR_USE_LAYOUT_DETECTION: "true"
+      PADDLEOCR_USE_OCR_FOR_IMAGE_BLOCK: "true"
+      PADDLEOCR_START_SERVER: "true"
+      PADDLEOCR_SERVER_HOST: "127.0.0.1"
+      PADDLEOCR_SERVER_PORT: "18080"
+      PADDLEOCR_SERVER_START_TIMEOUT: "1200"
+      PADDLEOCR_SERVER_LOG_DIR: "outputs/main_exp/logs/paddleocr_vl_1_6_pipeline_sglang"
+      PADDLEOCR_MAX_NEW_TOKENS: "4096"
+      PADDLEOCR_TEMPERATURE: "0"
+      FORMTSR_RESULT_FSYNC: "false"
+
+  - name: unlimited_ocr_hf_vlm
+    provider: local_hf_vlm
+    group: vlm
+    model: Unlimited-OCR
+    enabled: false
+    batch_size: 8
+    temperature: 0
+    max_tokens: 32768
+    timeout_seconds: 172800
+    response_format: text
+    prompt_override: "<image>document parsing."
+    parser: deepseek_ocr_markdown
+    batch_error_completes_samples: true
+    batch_command: "./.venv-vllm/bin/python scripts/hf_document_vlm_batch.py --backend unlimited_ocr --model-path /path/to/model/base/baidu/Unlimited-OCR"
+    env:
+      CUDA_VISIBLE_DEVICES: "1"
+      HF_MODEL_PATH: "/path/to/model/base/baidu/Unlimited-OCR"
+      HF_DEVICE: "cuda:0"
+      HF_DTYPE: "bfloat16"
+      HF_MAX_TOKENS: "32768"
+      HF_TEMPERATURE: "0"
+      UNLIMITED_OCR_IMAGE_MODE: "gundam"
+      UNLIMITED_OCR_NGRAM_WINDOW: "128"
+      FORMTSR_RESULT_FSYNC: "false"
+
+  - name: unlimited_ocr_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: baidu/Unlimited-OCR
+    enabled: false
+    batch_size: 16
+    concurrency: 16
+    temperature: 0
+    max_tokens: 8192
+    timeout_seconds: 172800
+    request_timeout_seconds: 3600
+    server_start_timeout_seconds: 1200
+    response_format: text
+    prompt_override: "<image>document parsing."
+    include_chat_template_kwargs: false
+    parser: unlimited_ocr_markdown
+    batch_error_completes_samples: true
+    base_url: "http://127.0.0.1:8000"
+    server_command: >-
+      docker run --rm --gpus all --network host --ipc host
+      -v /path/to/model/base/baidu/Unlimited-OCR:/models/Unlimited-OCR:ro
+      vllm/vllm-openai:unlimited-ocr
+      /models/Unlimited-OCR
+      --trust-remote-code
+      --host 127.0.0.1
+      --port 8000
+      --served-model-name baidu/Unlimited-OCR
+      --tensor-parallel-size 1
+      --gpu-memory-utilization 0.90
+      --max-model-len 32768
+      --max-num-seqs 16
+      --logits-processors vllm.model_executor.models.unlimited_ocr:NGramPerReqLogitsProcessor
+      --no-enable-prefix-caching
+      --mm-processor-cache-gb 0
+    max_model_len: 32768
+    max_num_seqs: 16
+    tensor_parallel_size: 1
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    extra_body:
+      skip_special_tokens: false
+      vllm_xargs:
+        ngram_size: 35
+        window_size: 128
+    vllm_extra_args:
+      no_enable_prefix_caching: true
+      logits_processors: "vllm.model_executor.models.unlimited_ocr:NGramPerReqLogitsProcessor"
+    env:
+      CUDA_VISIBLE_DEVICES: "0"
+      VLLM_MODEL_PATH: "/path/to/model/base/baidu/Unlimited-OCR"
+      # Official recipe requires vllm/vllm-openai:unlimited-ocr; stable pip wheels do not yet include UnlimitedOCRForCausalLM.
+      FORMTSR_RESULT_FSYNC: "false"
+
+  - name: step3_vl_10b_vllm_vlm
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: stepfun-ai/Step3-VL-10B
+    enabled: false
+    batch_size: 16
+    concurrency: 16
+    server_start_timeout_seconds: 1200
+    request_timeout_seconds: 1800
+    temperature: 0
+    max_tokens: 8192
+    timeout_seconds: 172800
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: step3_compact_json
+    include_chat_template_kwargs: false
+    assistant_prefill: "</think>\n"
+    continue_final_message: true
+    extra_body:
+      repetition_detection:
+        max_pattern_size: 64
+        min_pattern_size: 2
+        min_count: 8
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 32768
+    max_num_seqs: 8
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13347
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    vllm_extra_args:
+      reasoning_parser: step3
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/bench/stepfun-ai/Step3-VL-10B"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "step3_vl_10b"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "false"
+      FORMTSR_DEBUG_PAYLOAD_PATH: "outputs/main_exp/logs/step3_vl_10b_vllm_vlm_payload_debug.json"
+
+  - name: mineru2_5_pro_hf_vlm
+    provider: local_hf_vlm
+    group: vlm
+    model: MinerU2.5-Pro-2605-1.2B
+    enabled: false
+    batch_size: 16
+    temperature: 0
+    max_tokens: 4096
+    timeout_seconds: 172800
+    response_format: text
+    prompt_override: "<image>document parsing."
+    parser: deepseek_ocr_markdown
+    batch_error_completes_samples: true
+    batch_command: "./.venv-vllm/bin/python scripts/hf_document_vlm_batch.py --backend mineru_client --model-path /path/to/bench/opendatalab/MinerU2.5-Pro-2605-1.2B"
+    env:
+      CUDA_VISIBLE_DEVICES: "0"
+      HF_MODEL_PATH: "/path/to/bench/opendatalab/MinerU2.5-Pro-2605-1.2B"
+      HF_DEVICE: "cuda:0"
+      HF_DTYPE: "bfloat16"
+      HF_MAX_TOKENS: "4096"
+      HF_TEMPERATURE: "0"
+      FORMTSR_RESULT_FSYNC: "false"
+
+  - name: mineru2_5_pro_vllm_engine_vlm
+    provider: local_hf_vlm
+    group: vlm
+    model: MinerU2.5-Pro-2605-1.2B
+    enabled: false
+    batch_size: 64
+    temperature: 0
+    max_tokens: 4096
+    timeout_seconds: 172800
+    response_format: text
+    prompt_override: "<image>document parsing."
+    parser: deepseek_ocr_markdown
+    batch_error_completes_samples: true
+    batch_command: "./.venv-vllm/bin/python scripts/hf_document_vlm_batch.py --backend mineru_client --model-path /path/to/bench/opendatalab/MinerU2.5-Pro-2605-1.2B"
+    env:
+      HF_MODEL_PATH: "/path/to/bench/opendatalab/MinerU2.5-Pro-2605-1.2B"
+      HF_DTYPE: "bfloat16"
+      HF_MAX_TOKENS: "4096"
+      HF_TEMPERATURE: "0"
+      MINERU_BACKEND: "vllm-engine"
+      MINERU_VLLM_PATCH_RENDERER: "true"
+      MINERU_LOG_LEVEL: "WARNING"
+      MINERU_OUTPUT_FORMAT: "markdown"
+      MINERU_IMAGE_ANALYSIS: "false"
+      MINERU_MAX_CONCURRENCY: "64"
+      MINERU_VLLM_DTYPE: "bfloat16"
+      MINERU_VLLM_GPU_MEMORY_UTILIZATION: "0.92"
+      MINERU_VLLM_MAX_MODEL_LEN: "8192"
+      MINERU_VLLM_MAX_NUM_SEQS: "64"
+      MINERU_VLLM_TENSOR_PARALLEL_SIZE: "1"
+      MINERU_USE_TQDM: "false"
+      FORMTSR_RESULT_FSYNC: "false"
+
+  - name: gemma4_26b_hf_vlm
+    provider: local_hf_vlm
+    group: vlm
+    model: gemma-4-26B-A4B-it
+    enabled: false
+    batch_size: 1
+    temperature: 0
+    max_tokens: 4096
+    timeout_seconds: 172800
+    response_format: json_schema
+    response_json_schema_name: formtsr_vlm_compact_v1
+    prompt_variant: compact_valid_json
+    batch_error_completes_samples: true
+    batch_command: "/path/to/bench/venvs/vllm-gemma4-cu124/bin/python scripts/hf_document_vlm_batch.py --backend generic_image_text --model-path /path/to/bench/google/gemma-4-26B-A4B-it"
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True"
+      HF_MODEL_PATH: "/path/to/bench/google/gemma-4-26B-A4B-it"
+      HF_MODEL_CLASS: "multimodal_lm"
+      HF_DEVICE_MAP: "auto"
+      HF_MAX_MEMORY: '{"0":"74GiB","1":"74GiB","cpu":"200GiB"}'
+      HF_IMAGE_INPUT: "path"
+      HF_ENABLE_THINKING: "false"
+      HF_DEVICE: "cuda:0"
+      HF_DTYPE: "bfloat16"
+      HF_MAX_TOKENS: "4096"
+      HF_TEMPERATURE: "0"
+      HF_SKIP_SPECIAL_TOKENS: "true"
+      HF_CLEAN_UP_TOKENIZATION_SPACES: "false"
+      FORMTSR_RESULT_FSYNC: "false"
+
+  - name: traditional_tsr
+    provider: traditional_tsr
+    group: traditional_tsr
+    model: traditional-tsr
+    enabled: false
+    batch_size: 1
+    command: ""

@@ -1,0 +1,30 @@
+output_dir: outputs/sft_transfer_figure
+seed: 42
+bootstrap_iterations: 10000
+
+formtsr_index: outputs/dataset_splits/template_stratified_seed42/test_index.jsonl
+srfund_root: raw/srfund/extracted/dataset
+srfund_aligned_index: outputs/srfund_formstruct_aligned_dataset/index.jsonl
+srfund_aligned_output: outputs/srfund_formstruct_aligned_benchmark
+srfund_native_output: outputs/srfund_qwen_transfer_benchmark
+srfund_split: validation_balanced
+unavailable_per_language: 50
+
+models:
+  - family: qwen3.5-9b
+    display_name: Qwen3.5-9B
+    formtsr_base_pred_dir: outputs/main_exp/pred/qwen3_5_9b_sglang_vlm
+    formtsr_sft_pred_dir: outputs/qwen35_formtsr_lora_test/pred/qwen3_5_9b_formtsr_lora_vllm_vlm
+    srfund_aligned_base_model: qwen35_9b_base_formstruct_aligned
+    srfund_aligned_sft_model: qwen35_9b_sft_formstruct_aligned
+    srfund_native_base_model: qwen35_9b_base
+    srfund_native_sft_model: qwen35_9b_formtsr_tuned
+
+  - family: qwen3.6-35b-a3b
+    display_name: Qwen3.6-35B-A3B
+    formtsr_base_pred_dir: outputs/qwen36_base_hierarchical_v2_test/pred/qwen3_6_35b_a3b_base_hierarchical_v2
+    formtsr_sft_pred_dir: outputs/qwen36_formtsr_hierarchical_v2_merged_test/pred/qwen3_6_35b_a3b_formtsr_hierarchical_v2_lora
+    srfund_aligned_base_model: qwen36_35b_base_formstruct_aligned
+    srfund_aligned_sft_model: qwen36_35b_sft_formstruct_aligned
+    srfund_native_base_model: qwen36_35b_a3b_base
+    srfund_native_sft_model: qwen36_35b_a3b_formtsr_tuned

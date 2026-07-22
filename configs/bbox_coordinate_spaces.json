@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "canonical_space": "normalized_0_1",
+  "policy": {
+    "normalized_1000": "divide every coordinate by 1000",
+    "normalized_1": "use coordinates as emitted",
+    "pixel": "divide x coordinates by image width and y coordinates by image height",
+    "bounds": "clip transformed coordinates to [0, 1]",
+    "invalid": "drop non-finite, malformed, zero-area, and reversed boxes without swapping endpoints"
+  },
+  "runs": {
+    "Qwen3.6-35B-A3B": {
+      "source_space": "normalized_1000",
+      "evidence": "57/70 audited template samples require a 0-1000 interpretation"
+    },
+    "Qwen3.6-35B-A3B_aligned_metadata": {
+      "inherits": "Qwen3.6-35B-A3B"
+    },
+    "Qwen3.6-35B-A3B_vllm_vlm": {
+      "inherits": "Qwen3.6-35B-A3B",
+      "evidence": "robustness predictions use integer 0-1000 coordinates; rare values above 1000 remain subject to the existing clipping policy"
+    },
+    "qwen3_6_35b_a3b_base_vllm_full_test": {
+      "inherits": "Qwen3.6-35B-A3B",
+      "evidence": "full-protocol base run uses the audited Qwen3.6 normalized 0-1000 coordinate contract"
+    },
+    "qwen3_6_35b_a3b_formtsr_lora_vllm_full_test": {
+      "inherits": "Qwen3.6-35B-A3B",
+      "evidence": "fine-tuned model uses the same full prompt contract with normalized 0-1000 coordinates"
+    },
+    "qwen3_6_35b_a3b_base_hierarchical_v2": {
+      "inherits": "Qwen3.6-35B-A3B",
+      "evidence": "hierarchical control prompt explicitly requires normalized integer 0-1000 coordinates"
+    },
+    "qwen3_6_35b_a3b_formtsr_hierarchical_v2_lora": {
+      "inherits": "Qwen3.6-35B-A3B",
+      "evidence": "hierarchical SFT targets and inference prompt explicitly use normalized integer 0-1000 coordinates"
+    },
+    "hierarchical_v2_target_oracle": {
+      "source_space": "normalized_1000",
+      "evidence": "deterministic hierarchical target builder emits normalized integer 0-1000 coordinates"
+    },
+    "caprl_internvl3_5_8b_sglang_vlm": {
+      "source_space": "none",
+      "evidence": "no prediction directory"
+    },
+    "caprl_internvl3_5_8b_vllm_vlm": {
+      "source_space": "normalized_1000",
+      "evidence": "43/70 audited template samples require a 0-1000 interpretation"
+    },
+    "caprl_internvl3_5_8b_vllm_vlm.smoke_20260706155003": {
+      "inherits": "caprl_internvl3_5_8b_vllm_vlm"
+    },
+    "caprl_internvl3_5_8b_vllm_vlm_aligned_metadata": {
+      "inherits": "caprl_internvl3_5_8b_vllm_vlm"
+    },
+    "caprl_internvl3_5_8b_vllm_vlm_aligned_metadata_smoke": {
+      "inherits": "caprl_internvl3_5_8b_vllm_vlm"
+    },
+    "deepseek_ocr2_sglang_vlm": {
+      "source_space": "normalized_1000",
+      "evidence": "all three available predictions use coordinates near 1000 on 864-pixel-wide pages"
+    },
+    "deepseek_vl2_vllm_vlm": {
+      "source_space": "normalized_1000",
+      "evidence": "54/70 audited template samples require a 0-1000 interpretation; some emitted boxes remain malformed"
+    },
+    "gemma4_26b_hf_vlm": {
+      "source_space": "normalized_1000",
+      "evidence": "all three available predictions require a 0-1000 interpretation"
+    },
+    "gemma4_26b_vllm_vlm": {
+      "source_space": "none",
+      "evidence": "empty prediction run"
+    },
+    "glm4_6v_flash_sglang_vlm": {
+      "source_space": "normalized_1000",
+      "evidence": "58/70 audited template samples require a 0-1000 interpretation"
+    },
+    "glm4_6v_flash_sglang_vlm_aligned_metadata": {
+      "inherits": "glm4_6v_flash_sglang_vlm"
+    },
+    "glm4_6v_flash_vllm_vlm": {
+      "inherits": "glm4_6v_flash_sglang_vlm",
+      "evidence": "robustness predictions use integer 0-1000 coordinates; out-of-range boxes are audited and clipped or dropped by policy"
+    },
+    "gpt_vlm": {
+      "source_space": "pixel",
+      "evidence": "all three available predictions stay inside the original 864x1232 image and extend beyond 1000 on the long axis"
+    },
+    "kimi_vl_a3b_sglang_vlm": {
+      "source_space": "normalized_1",
+      "evidence": "available boxes use unit-scale coordinates"
+    },
+    "kimi_vl_a3b_vllm_vlm": {
+      "source_space": "normalized_1",
+      "evidence": "audited boxes use unit-scale coordinates; out-of-range and reversed boxes are handled as invalid"
+    },
+    "mineru2_5_pro_hf_vlm": {
+      "source_space": "none",
+      "evidence": "180 parsed predictions contain no bbox"
+    },
+    "mineru2_5_pro_vllm_engine_vlm": {
+      "source_space": "none",
+      "evidence": "7000 parsed predictions contain no bbox"
+    },
+    "paddleocr_vl_1_6_hf_vlm": {
+      "source_space": "none",
+      "evidence": "empty prediction run"
+    },
+    "paddleocr_vl_1_6_pipeline_sglang": {
+      "source_space": "pixel",
+      "evidence": "69/70 audited template samples use original image pixels and remain inside page bounds"
+    },
+    "qwen3_5_9b_sglang_vlm": {
+      "source_space": "normalized_1000",
+      "evidence": "37/70 audited template samples require a 0-1000 interpretation"
+    },
+    "qwen3_5_9b_sglang_vlm_aligned_metadata": {
+      "inherits": "qwen3_5_9b_sglang_vlm"
+    },
+    "qwen3_5_9b_formtsr_lora_vllm_vlm": {
+      "inherits": "qwen3_5_9b_sglang_vlm",
+      "evidence": "fine-tuned model uses the same prompt contract with normalized 0-1000 coordinates"
+    },
+    "qwen3_5_9b_vllm_vlm": {
+      "inherits": "qwen3_5_9b_sglang_vlm",
+      "evidence": "robustness predictions use integer 0-1000 coordinates; malformed outliers are handled by the existing invalid-box policy"
+    },
+    "step3_vl_10b_vllm_vlm": {
+      "source_space": "normalized_1000",
+      "evidence": "50/70 audited template samples require a 0-1000 interpretation"
+    },
+    "unlimited_ocr_hf_vlm": {
+      "source_space": "normalized_1000",
+      "evidence": "available prediction coordinates consistently span approximately 0-999"
+    }
+  }
+}

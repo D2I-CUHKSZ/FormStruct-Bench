@@ -1,0 +1,55 @@
+model:
+  model_name_or_path: /root/autodl-tmp/Qwen3-VL-Embedding-8B
+  instruction: Represent the image for fine-grained image retrieval.
+  normalize: true
+  attn_implementation: sdpa
+
+train:
+  seed: 42
+  output_dir: outputs/qwen3_vl_embedding_smoke
+  num_train_epochs: 1
+  learning_rate: 1.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.05
+  lr_scheduler_type: cosine
+  max_grad_norm: 1.0
+  logging_steps: 5
+  eval_steps: 20
+  save_steps: 100
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 2
+  dataloader_num_workers: 0
+  bf16: true
+  fp16: false
+
+lora:
+  enable: true
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+data:
+  train_manifest: data/train_smoke.jsonl
+  val_manifest: data/val_smoke.jsonl
+  test_manifest: data/test.jsonl
+  image_root: /root/autodl-fs/data-new
+  negatives_per_anchor: 2
+  hard_negative_ratio: 0.4
+
+loss:
+  temperature: 0.05
+
+eval:
+  topk:
+    - 1
+    - 5
+    - 10

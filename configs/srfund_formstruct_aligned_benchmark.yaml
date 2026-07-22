@@ -1,0 +1,185 @@
+data_root: raw/srfund/extracted/dataset
+output_dir: outputs/srfund_formstruct_aligned_benchmark
+index_path: outputs/srfund_formstruct_aligned_dataset/index.jsonl
+schema_max_files: 25
+compact_structure: false
+
+metric_weights:
+  TSR-path: 0.34
+  VAcc: 0.33
+  R-F1: 0.00
+  LIG-F1: 0.00
+  WAcc: 0.33
+
+models:
+  - name: qwen35_9b_base_formstruct_aligned
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: Qwen3.5-9B
+    enabled: true
+    batch_size: 16
+    concurrency: 16
+    server_start_timeout_seconds: 1800
+    request_timeout_seconds: 1800
+    retries: 1
+    temperature: 0
+    max_tokens: 16384
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_v1
+    prompt_variant: full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 8
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13510
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    log_dir: outputs/srfund_formstruct_aligned_benchmark/logs
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/model/base/Qwen/Qwen3.5-9B"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "qwen35_9b_base_formstruct_aligned"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      SGLANG_ENABLE_THINKING: "false"
+      VLLM_EXTRA_ARGS: "--disable-log-stats --generation-config vllm"
+
+  - name: qwen35_9b_sft_formstruct_aligned
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: Qwen3.5-9B-FormTSR-LoRA
+    enabled: true
+    batch_size: 16
+    concurrency: 16
+    server_start_timeout_seconds: 1800
+    request_timeout_seconds: 1800
+    retries: 1
+    temperature: 0
+    max_tokens: 16384
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_vlm_v1
+    prompt_variant: full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 8
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13511
+    gpu_memory_utilization: 0.90
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    log_dir: outputs/srfund_formstruct_aligned_benchmark/logs
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/model/finetuned/Qwen3.5-9B-FormTSR-LoRA"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "qwen35_9b_sft_formstruct_aligned"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      SGLANG_ENABLE_THINKING: "false"
+      VLLM_EXTRA_ARGS: "--disable-log-stats --generation-config vllm"
+
+  - name: qwen36_35b_base_formstruct_aligned
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B
+    enabled: true
+    batch_size: 8
+    concurrency: 8
+    server_start_timeout_seconds: 1800
+    request_timeout_seconds: 1800
+    retries: 1
+    temperature: 0
+    max_tokens: 14336
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_hierarchical_v2
+    prompt_variant: hierarchical_full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 4
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13512
+    gpu_memory_utilization: 0.95
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    log_dir: outputs/srfund_formstruct_aligned_benchmark/logs
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/data/model/Qwen/Qwen3.6-35B-A3B"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "qwen36_35b_base_formstruct_aligned"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      SGLANG_ENABLE_THINKING: "false"
+      VLLM_EXTRA_ARGS: "--disable-log-stats --generation-config vllm"
+
+  - name: qwen36_35b_sft_formstruct_aligned
+    provider: local_vllm_server_vlm
+    group: vlm
+    model: Qwen3.6-35B-A3B-FormTSR-Hierarchical-v2
+    enabled: true
+    batch_size: 8
+    concurrency: 8
+    server_start_timeout_seconds: 1800
+    request_timeout_seconds: 1800
+    retries: 1
+    temperature: 0
+    max_tokens: 14336
+    response_format: json_schema
+    response_format_style: structured_outputs
+    response_json_schema_name: formtsr_hierarchical_v2
+    prompt_variant: hierarchical_full
+    include_chat_template_kwargs: true
+    base_url: "http://127.0.0.1:8000"
+    max_model_len: 24576
+    max_num_seqs: 4
+    tensor_parallel_size: 1
+    data_parallel_size: 2
+    data_parallel_size_local: 2
+    data_parallel_backend: mp
+    data_parallel_address: "127.0.0.1"
+    data_parallel_rpc_port: 13513
+    gpu_memory_utilization: 0.95
+    mm_processor_cache_gb: 0
+    fail_fast_server_errors: true
+    log_dir: outputs/srfund_formstruct_aligned_benchmark/logs
+    env:
+      CUDA_VISIBLE_DEVICES: "0,1"
+      VLLM_MODEL_PATH: "/path/to/bench/Qwen/Qwen3.6-35B-A3B-FormTSR-Hierarchical-v2"
+      VLLM_BIN: "./.venv-vllm/bin/vllm"
+      VLLM_SITE_PACKAGES: "./.venv-vllm/lib/python3.12/site-packages"
+      VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "1"
+      FORMTSR_SERVED_MODEL: "qwen36_35b_sft_formstruct_aligned"
+      FORMTSR_RESPONSE_FORMAT_STYLE: "structured_outputs"
+      FORMTSR_INCLUDE_CHAT_TEMPLATE_KWARGS: "true"
+      FORMTSR_RESULT_FSYNC: "false"
+      SGLANG_ENABLE_THINKING: "false"
+      VLLM_EXTRA_ARGS: "--disable-log-stats --generation-config vllm"

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "formstruct-bench"
+version = "0.1.0"
+description = "Evaluation toolkit for multilingual hierarchical form understanding"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+dependencies = [
+  "apted>=1.0.3",
+  "numpy>=1.26",
+  "PyYAML>=6.0",
+  "rapidfuzz>=3.0",
+  "scipy>=1.11",
+]
+
+[tool.setuptools.packages.find]
+include = ["formtsr_exp*", "benchmark_stats*", "srfund_exp*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["."]

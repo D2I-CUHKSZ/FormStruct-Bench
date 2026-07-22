@@ -1,0 +1,6 @@
+-r requirements.txt
+matplotlib>=3.8
+opencv-python-headless>=4.9
+pandas>=2.1
+Pillow>=10.0
+scikit-learn>=1.4

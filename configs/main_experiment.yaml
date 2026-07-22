@@ -1,0 +1,37 @@
+data_root: ./data/FormStruct-Bench/datasets
+layout_root: ./data/FormStruct-Bench/template_annotation
+difficulty_csv: ./outputs/domain_stats/normal_calibrated_difficulty_sample_levels.csv
+output_dir: ./outputs/main_exp
+index_path: ./outputs/main_exp/dataset_index.jsonl
+schema_max_files: 25
+compact_structure: false
+
+metric_weights:
+  TSR-path: 0.20
+  VAcc: 0.20
+  R-F1: 0.20
+  LIG-F1: 0.20
+  WAcc: 0.20
+
+models:
+  - name: gpt_vlm
+    provider: openai_vlm
+    group: vlm
+    model: gpt-5.5
+    enabled: false
+    batch_size: 4
+    temperature: 0
+    max_tokens: 8192
+    timeout_seconds: 240
+    retries: 1
+
+  - name: external_vllm_example
+    provider: external_vllm_server_vlm
+    group: vlm
+    model: replace-with-served-model-name
+    enabled: false
+    base_url: http://127.0.0.1:8000
+    concurrency: 4
+    temperature: 0
+    max_tokens: 8192
+    request_timeout_seconds: 1200
