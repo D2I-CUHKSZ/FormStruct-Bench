@@ -1,0 +1,4 @@
+split,template_count,template_share_pct,instance_count,instance_share_pct,instances_per_template,human_reviewed_count,human_review_rate_pct
+train,49,70.0,4900,70.0,100.0,0,0.0
+validation,10,14.285714285714285,1000,14.285714285714285,100.0,0,0.0
+test,11,15.714285714285714,1100,15.714285714285714,100.0,1100,100.0

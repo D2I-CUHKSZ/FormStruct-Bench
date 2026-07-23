@@ -48,6 +48,11 @@ contains 80 JSON files; 10 are redundant metadata and must be excluded from
 official statistics, splits, training scope, and evaluation. Join annotations
 to the canonical dataset by template name.
 
+The official template-disjoint split is fixed with seed 42: 49 training
+templates (4,900 pages), 10 validation templates (1,000 pages), and 11 test
+templates (1,100 pages). Portable assignments and sample indices are versioned
+under `splits/template_stratified_seed42/`; do not create a page-random split.
+
 ## Installation
 
 Create an isolated environment and install the core evaluation dependencies:
@@ -121,5 +126,9 @@ generated output.
 
 ## License
 
-This code is released under the Apache License 2.0. Dataset and third-party
-model terms may impose additional requirements; review those terms separately.
+This code is released under the Apache License 2.0. That license applies only
+to this software repository and does not license the dataset images, source
+form designs, answers, annotations, or derived augmentations. Dataset terms and
+the per-template rights audit are maintained in the Hugging Face dataset
+repository; the audit status must be checked before downloading or
+redistributing data.
