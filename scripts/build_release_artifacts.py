@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import shutil
 from pathlib import Path
 
 
@@ -56,6 +55,13 @@ def build(source_dir: Path, output_dir: Path) -> None:
     split_dir.mkdir(parents=True, exist_ok=True)
     provenance_dir.mkdir(parents=True, exist_ok=True)
 
+    for obsolete_name in (
+        "split_composition.csv",
+        "split_metadata.json",
+        "template_assignments.csv",
+    ):
+        (split_dir / obsolete_name).unlink(missing_ok=True)
+
     assignments: list[dict[str, str]] = []
     with (source_dir / "template_assignments.csv").open(
         encoding="utf-8", newline=""
@@ -66,33 +72,12 @@ def build(source_dir: Path, output_dir: Path) -> None:
             row["repository_template"] = repository_template(row["template_name"])
             assignments.append(row)
 
-    assignment_fields = ["template_name", "repository_template", *fieldnames[1:]]
-    with (split_dir / "template_assignments.csv").open(
-        "w", encoding="utf-8", newline=""
-    ) as target:
-        writer = csv.DictWriter(
-            target, fieldnames=assignment_fields, lineterminator="\n"
-        )
-        writer.writeheader()
-        writer.writerows(assignments)
-
     for split in ("train", "val", "test"):
         with (source_dir / f"{split}_index.jsonl").open(encoding="utf-8") as source:
             rows = [portable_sample(json.loads(line)) for line in source if line.strip()]
         with (split_dir / f"{split}_index.jsonl").open("w", encoding="utf-8") as target:
             for row in rows:
                 target.write(json.dumps(row, ensure_ascii=True) + "\n")
-
-    shutil.copyfile(
-        source_dir / "split_metadata.json", split_dir / "split_metadata.json"
-    )
-    with (source_dir / "split_composition.csv").open(
-        encoding="utf-8", newline=""
-    ) as source, (split_dir / "split_composition.csv").open(
-        "w", encoding="utf-8", newline=""
-    ) as target:
-        writer = csv.writer(target, lineterminator="\n")
-        writer.writerows(csv.reader(source))
 
     split_by_template = {row["template_name"]: row["split"] for row in assignments}
     templates = [row["template_name"] for row in assignments] + list(REDUNDANT_TEMPLATES)

@@ -50,8 +50,8 @@ to the canonical dataset by template name.
 
 The official template-disjoint split is fixed with seed 42: 49 training
 templates (4,900 pages), 10 validation templates (1,000 pages), and 11 test
-templates (1,100 pages). Portable assignments and sample indices are versioned
-under `splits/template_stratified_seed42/`; do not create a page-random split.
+templates (1,100 pages). Portable sample indices are versioned under
+`splits/template_stratified_seed42/`; do not create a page-random split.
 
 ## Installation
 
